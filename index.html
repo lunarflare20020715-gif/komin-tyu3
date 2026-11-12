@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中学3年生社会（公民）一問一答フラッシュカード｜全120問</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 3Dカードフリップ用アニメーション */
+    .perspective-1000 {
+      perspective: 1200px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* カスタムスクロールバー */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* 赤シート風マスク */
+    .answer-masked {
+      background-color: #fecdd3;
+      color: transparent;
+      user-select: none;
+      border-radius: 0.375rem;
+      transition: all 0.2s ease;
+    }
+    .answer-masked:hover {
+      background-color: #fda4af;
+    }
+
+    /* コースカードホバー演出 */
+    .course-card {
+      transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .course-card:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+
+  <!-- ヘッダー＆進捗ダッシュボード -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 sm:py-3.5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+        <!-- ロゴ＆タイトル（クリックでコース選択ホームへ） -->
+        <button onclick="showHomeScreen()" class="flex items-center gap-2.5 text-left group focus:outline-none">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600 group-hover:bg-indigo-700 text-white flex items-center justify-center font-bold shadow-sm shrink-0 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+              中学3年生社会（公民）一問一答
+            </h1>
+            <p class="text-xs text-slate-500">教科書準拠・テスト対策フラッシュカード（全120問）</p>
+          </div>
+        </button>
+
+        <!-- 全体の習得進捗サマリー＆リセット -->
+        <div class="flex items-center justify-between sm:justify-end gap-3">
+          <div class="flex items-center gap-3 bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200/80">
+            <div class="text-right">
+              <div class="text-[10px] font-medium text-slate-500">全章トータル習得</div>
+              <div class="text-xs sm:text-sm font-bold text-slate-800">
+                <span id="masteredCount" class="text-emerald-600 text-sm sm:text-base">0</span>
+                <span class="text-slate-400 font-normal"> / 120 問</span>
+              </div>
+            </div>
+            <div class="w-20 sm:w-28">
+              <div class="flex justify-between text-[10px] font-bold mb-1">
+                <span class="text-slate-500">達成率</span>
+                <span id="masteredPercent" class="text-indigo-600">0%</span>
+              </div>
+              <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="openResetModal()" class="p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-semibold border border-rose-200 bg-rose-50/70 text-rose-700 hover:bg-rose-100 active:scale-95 transition-all flex items-center gap-1 shrink-0" title="学習記録をすべてリセット">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span class="hidden md:inline">進捗リセット</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 学習画面時のみ表示されるサブナビゲーション（章選択に戻る + 章クイック切替タブ + 学習モード切替） -->
+      <div id="studySubHeader" class="hidden flex-col gap-2.5 pt-3 mt-2.5 border-t border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- 左側：章選択ホームに戻る ＋ 章クイック切替タブ -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 max-w-full">
+            <button onclick="showHomeScreen()" class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center gap-1 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>章選択</span>
+            </button>
+
+            <div class="h-4 w-[1px] bg-slate-200 mx-0.5 shrink-0"></div>
+
+            <!-- 章タブ（1章・2章・3章・全章） -->
+            <button onclick="selectChapter('第1章 現代社会と私たち')" id="chapTab-ch1" class="chap-tab px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200">
+              第1章 (28)
+            </button>
+            <button onclick="selectChapter('第2章 個人の尊重と日本国憲法')" id="chapTab-ch2" class="chap-tab px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200">
+              第2章 (48)
+            </button>
+            <button onclick="selectChapter('第3章 現代の民主政治と社会')" id="chapTab-ch3" class="chap-tab px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200">
+              第3章 (44)
+            </button>
+            <button onclick="selectChapter('all')" id="chapTab-all" class="chap-tab px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200">
+              全章 (120)
+            </button>
+          </div>
+
+          <!-- 右側：カード学習 / 一覧リスト 切り替え -->
+          <div class="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 shrink-0">
+            <button id="tabFlashcard" onclick="switchViewMode('flashcard')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              カード学習
+            </button>
+            <button id="tabList" onclick="switchViewMode('list')" class="px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              一覧・赤シート
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-5 flex flex-col gap-5">
+
+    <!-- ==================== 0. コース選択ホーム画面 ==================== -->
+    <section id="homeScreen" class="flex-1 flex flex-col justify-center py-2 sm:py-4 gap-5">
+      <div class="text-center max-w-xl mx-auto">
+        <span class="inline-block text-xs font-bold px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 mb-2">
+          学習コースを選択してください
+        </span>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-900 mb-1.5">どの単元からテスト対策を始めますか？</h2>
+        <p class="text-xs sm:text-sm text-slate-500">
+          章ごとに集中して暗記することも、全120問まとめて総合演習することもできます。
+        </p>
+      </div>
+
+      <!-- 4つのコース選択グリッド -->
+      <div id="courseGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl w-full mx-auto">
+        <!-- JSで各章の進捗付きカードを動的生成 -->
+      </div>
+
+      <!-- 学習モードのヒント -->
+      <div class="max-w-4xl w-full mx-auto bg-white/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+        <div class="flex items-center gap-2.5">
+          <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold shrink-0">💡</span>
+          <span>各コース内で<strong>「カードめくり学習」</strong>と<strong>「一覧リスト（赤シート機能）」</strong>をいつでも切り替えられます。</span>
+        </div>
+        <span class="text-[11px] text-slate-400 shrink-0">進捗はブラウザに自動保存されます</span>
+      </div>
+    </section>
+
+    <!-- ==================== 学習画面ラッパー ==================== -->
+    <div id="studyScreen" class="hidden flex-1 flex flex-col gap-4">
+
+      <!-- 選択中の章バナー＆絞り込み・シャッフルバー -->
+      <section class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col gap-3">
+        <!-- 上段：選択中の章タイトル＋章別ミニ進捗＋シャッフル -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span id="activeChapterBadge" class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+            <h2 id="activeChapterTitle" class="text-sm sm:text-base font-extrabold text-slate-900">
+              第1章 現代社会と私たち
+            </h2>
+            <span id="activeChapterProgressText" class="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+              習得 0 / 28問
+            </span>
+          </div>
+
+          <button id="btnShuffle" onclick="toggleShuffle()" class="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-2xs">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span id="shuffleLabel">シャッフル</span>
+          </button>
+        </div>
+
+        <!-- 下段：状態フィルター（すべて / 未習得のみ / 要復習のみ / 習得済みのみ） -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          <span class="text-xs font-bold text-slate-500 shrink-0 mr-1">出題絞り込み:</span>
+          <button onclick="setStatusFilter('all')" id="status-all" class="status-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-indigo-600 text-white shadow-2xs">
+            すべて
+          </button>
+          <button onclick="setStatusFilter('unmastered')" id="status-unmastered" class="status-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200">
+            未習得のみ
+          </button>
+          <button onclick="setStatusFilter('review')" id="status-review" class="status-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200">
+            要復習のみ
+          </button>
+          <button onclick="setStatusFilter('mastered')" id="status-mastered" class="status-pill px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 bg-slate-100 text-slate-600 hover:bg-slate-200">
+            習得済みのみ
+          </button>
+        </div>
+      </section>
+
+      <!-- ==================== 1. フラッシュカード学習ビュー ==================== -->
+      <section id="flashcardView" class="flex-1 flex flex-col items-center justify-center gap-4">
+
+        <!-- カード位置インジケーター -->
+        <div class="w-full max-w-2xl flex items-center justify-between px-1">
+          <div class="flex items-center gap-2">
+            <span id="currentCardPosition" class="text-sm sm:text-base font-extrabold text-slate-800 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-2xs">
+              1 / 28
+            </span>
+            <span id="shuffleBadge" class="hidden text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 border border-amber-200">
+              シャッフル中
+            </span>
+          </div>
+          <div class="text-xs text-slate-400 hidden sm:flex items-center gap-3">
+            <span><kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px] font-mono text-slate-600">Space</kbd> めくる</span>
+            <span><kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px] font-mono text-slate-600">←</kbd> <kbd class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-[10px] font-mono text-slate-600">→</kbd> 移動</span>
+          </div>
+        </div>
+
+        <!-- 該当カードなし時のエンプティステート -->
+        <div id="emptyState" class="hidden w-full max-w-2xl bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 text-center shadow-sm">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900 mb-1">条件に一致するカードがありません</h3>
+          <p class="text-sm text-slate-500 mb-6">この絞り込み条件の問題はすべて完了しているか、該当する問題がありません。</p>
+          <div class="flex flex-wrap justify-center gap-3">
+            <button onclick="setStatusFilter('all')" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-all shadow-sm">
+              この章の「すべて」を表示
+            </button>
+            <button onclick="showHomeScreen()" class="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold hover:bg-slate-200 transition-all">
+              別の章を選ぶ
+            </button>
+          </div>
+        </div>
+
+        <!-- 3Dフラッシュカード本体 -->
+        <div id="cardContainer" class="w-full max-w-2xl perspective-1000">
+          <div id="cardInner" onclick="flipCard()" class="relative w-full min-h-[340px] sm:min-h-[380px] cursor-pointer transform-style-3d select-none">
+
+            <!-- 【表面：問題】 -->
+            <div class="absolute inset-0 w-full h-full bg-white rounded-3xl border-2 border-slate-200/90 shadow-lg p-6 sm:p-8 flex flex-col justify-between backface-hidden">
+              <!-- カード上部バッジ -->
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span id="frontChapterBadge" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    第1章 現代社会と私たち
+                  </span>
+                  <span id="frontUnitBadge" class="text-xs font-medium px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">
+                    持続可能な社会に向けて
+                  </span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span id="frontReviewBadge" class="hidden text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800">
+                    要復習
+                  </span>
+                  <span id="frontMasteredBadge" class="hidden text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                    ✓ 習得済み
+                  </span>
+                  <span id="frontNoBadge" class="text-xs font-extrabold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
+                    No.1
+                  </span>
+                </div>
+              </div>
+
+              <!-- 問題文エリア -->
+              <div class="my-auto py-6 text-center">
+                <div class="inline-block text-[11px] font-bold tracking-wider uppercase text-indigo-500 mb-2 bg-indigo-50/70 px-3 py-0.5 rounded-full">
+                  QUESTION
+                </div>
+                <p id="frontQuestion" class="text-xl sm:text-2xl font-bold text-slate-900 leading-relaxed">
+                  現在の世代の幸福と将来の世代の幸福とを両立させることを何というか。
+                </p>
+              </div>
+
+              <!-- カード下部ガイド -->
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-center text-xs font-semibold text-slate-400 gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                </svg>
+                カードをタップ（または下のボタン）で答えを表示
+              </div>
+            </div>
+
+            <!-- 【裏面：解答と解説】 -->
+            <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-50/70 via-white to-emerald-50/40 rounded-3xl border-2 border-indigo-300 shadow-lg p-6 sm:p-8 flex flex-col justify-between backface-hidden rotate-y-180">
+              <!-- カード上部バッジ -->
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-indigo-600 text-white">
+                    ANSWER
+                  </span>
+                  <span id="backUnitBadge" class="text-xs font-semibold text-slate-600">
+                    持続可能な社会に向けて
+                  </span>
+                </div>
+                <span id="backNoBadge" class="text-xs font-extrabold text-slate-400 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                  No.1
+                </span>
+              </div>
+
+              <!-- 解答＆解説エリア -->
+              <div class="my-auto py-4 text-center flex flex-col items-center justify-center gap-4">
+                <div class="w-full">
+                  <div class="text-xs text-slate-500 mb-1.5 line-clamp-2 px-2" id="backQuestionMini">
+                    現在の世代の幸福と将来の世代の幸福とを両立させることを何というか。
+                  </div>
+                  <div class="bg-white/95 border border-indigo-100 rounded-2xl px-5 py-4 shadow-2xs">
+                    <p id="backAnswer" class="text-xl sm:text-2xl font-black text-indigo-700 leading-snug">
+                      持続可能性（持続可能な社会）
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 教科書ページ・解説バッジ -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs sm:text-sm font-semibold">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  <span>教科書参照: <strong id="backExplanation">p.8 持続可能な社会に向けて</strong></span>
+                </div>
+              </div>
+
+              <!-- 下部ヒント -->
+              <div class="pt-2 border-t border-indigo-100/80 text-center text-xs text-slate-400">
+                下のボタンで学習結果を記録して次のカードへ進みます
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- アクションボタンエリア（表面時は「答えを見る」、裏面時は「もう一度」「覚えた！」） -->
+        <div id="actionControls" class="w-full max-w-2xl">
+          <!-- 表面用ボタン -->
+          <div id="frontActionRow" class="flex justify-center">
+            <button onclick="flipCard()" class="w-full sm:w-80 py-3.5 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold text-base shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2">
+              <span>答えを見る</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- 裏面用評価ボタン -->
+          <div id="backActionRow" class="hidden grid grid-cols-2 gap-3 sm:gap-4">
+            <button onclick="markCard(false)" class="py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-bold text-sm sm:text-base shadow-md shadow-amber-200 transition-all flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>もう一度（要復習）</span>
+            </button>
+
+            <button onclick="markCard(true)" class="py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-200 transition-all flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>覚えた！（習得済み）</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 前へ・次へナビゲーション -->
+        <div id="navControls" class="w-full max-w-2xl flex items-center justify-between pt-1">
+          <button id="btnPrev" onclick="prevCard()" class="px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-sm hover:bg-slate-50 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1.5 shadow-2xs">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>前の問題</span>
+          </button>
+
+          <button onclick="flipCard()" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/60 transition-all">
+            表裏を反転
+          </button>
+
+          <button id="btnNext" onclick="nextCard()" class="px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-sm hover:bg-slate-50 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1.5 shadow-2xs">
+            <span>次の問題</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ==================== 2. 一覧リストモードビュー ==================== -->
+      <section id="listView" class="hidden flex-col gap-3">
+        <!-- リスト上部ツールバー -->
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+          <div class="flex items-center gap-2">
+            <span class="text-xs sm:text-sm font-bold text-slate-700">表示件数: <span id="listCount" class="text-indigo-600">28</span> 問</span>
+            <span class="text-xs text-slate-400 hidden sm:inline">（解答が隠れているときはタップで個別表示できます）</span>
+          </div>
+
+          <button id="btnToggleAllAnswers" onclick="toggleMaskAllAnswers()" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 active:scale-95 transition-all flex items-center gap-1.5">
+            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+            </svg>
+            <span id="maskButtonText">解答をすべて隠す（赤シート）</span>
+          </button>
+        </div>
+
+        <!-- 問題一覧コンテナ -->
+        <div id="listContainer" class="flex flex-col gap-2.5 pb-8">
+          <!-- JSで動的生成 -->
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- 進捗リセット確認モーダル（alert/confirm不使用） -->
+  <div id="resetModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 animate-fade-in">
+      <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-2">学習進捗をリセットしますか？</h3>
+      <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+        記録されている「習得済み」「要復習」の履歴がすべて解除され、0問からのスタートに戻ります。この操作は取り消せません。
+      </p>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="closeResetModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-all">
+          キャンセル
+        </button>
+        <button onclick="confirmResetProgress()" class="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-sm transition-all">
+          リセットする
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト通知 -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-2">
+    <div id="toastMessage" class="bg-slate-900/90 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-xs">
+      進捗を保存しました
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 中学3年生社会（公民分野）全120問マスターデータ
+     */
+    const ALL_QUESTIONS = [
+      // 第1章 現代社会と私たち（No.1〜28）
+      { id: 1, chapter: "第1章 現代社会と私たち", unit: "持続可能な社会に向けて", q: "現在の世代の幸福と将来の世代の幸福とを両立させることを何というか。", a: "持続可能性（持続可能な社会）", exp: "p.8 持続可能な社会に向けて" },
+      { id: 2, chapter: "第1章 現代社会と私たち", unit: "持続可能な社会に向けて", q: "持続可能な社会の実現に向けて解決すべき5つの課題分野をすべて答えよ。", a: "環境・エネルギー、人権・平和、伝統・文化、防災・安全、情報・技術", exp: "p.8 持続可能な社会に向けて" },
+      { id: 3, chapter: "第1章 現代社会と私たち", unit: "情報化", q: "コンピューターやインターネットなどの情報通信技術をアルファベット3文字で何というか。", a: "ICT", exp: "p.12 情報化" },
+      { id: 4, chapter: "第1章 現代社会と私たち", unit: "情報化", q: "多くの情報から推論したり判断したりする人間の知能の働きをコンピューターに持たせたものを何というか。", a: "人工知能（AI）", exp: "p.12 情報化" },
+      { id: 5, chapter: "第1章 現代社会と私たち", unit: "情報化", q: "ICTの発達によって大量に収集・作成できるようになった、事業や防災などに役立つデータの集まりを何というか。", a: "ビッグデータ", exp: "p.12 情報化" },
+      { id: 6, chapter: "第1章 現代社会と私たち", unit: "少子高齢化", q: "1人の女性が一生の間に産む子どもの数の平均を示す指標を何というか。", a: "合計特殊出生率", exp: "p.16 少子高齢化" },
+      { id: 7, chapter: "第1章 現代社会と私たち", unit: "少子高齢化", q: "日本の総人口は何年から減少に転じたか（西暦）。", a: "2005年", exp: "p.16 少子高齢化" },
+      { id: 8, chapter: "第1章 現代社会と私たち", unit: "少子高齢化", q: "夫婦のみ、または夫婦と未婚の子どものみで構成される世帯を何というか。", a: "核家族世帯", exp: "p.16 少子高齢化" },
+      { id: 9, chapter: "第1章 現代社会と私たち", unit: "少子高齢化", q: "15〜64歳の働く中心となる世代の人口を何というか。", a: "生産年齢人口", exp: "p.17 少子高齢化" },
+      { id: 10, chapter: "第1章 現代社会と私たち", unit: "少子高齢化", q: "年金・医療・介護・生活保護など、国民の生活の安定を支える仕組みを何というか。", a: "社会保障", exp: "p.17 少子高齢化" },
+      { id: 11, chapter: "第1章 現代社会と私たち", unit: "私たちの生活と文化の役割", q: "2013年に「信仰の対象と芸術の源泉」としてユネスコの世界遺産に登録された日本の山は何か。", a: "富士山", exp: "p.18 私たちの生活と文化の役割" },
+      { id: 12, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "歴史の中で育まれ、受け継がれてきた芸能や衣食住・年中行事・価値観などを何というか。", a: "伝統文化", exp: "p.20 伝統文化の継承と新たな文化の創造" },
+      { id: 13, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "沖縄や奄美地域で琉球王国の時代から受け継がれてきた独自の文化を何というか（代表例も）。", a: "琉球文化（エイサー、紅型など）", exp: "p.21 伝統文化の継承と新たな文化の創造" },
+      { id: 14, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "北海道・樺太・千島列島周辺で先住民族が受け継継いできた文化を何というか（代表例も）。", a: "アイヌ文化（サロルンリムセ、アットゥシなど）", exp: "p.21 伝統文化の継承と新たな文化の創造" },
+      { id: 15, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "伝統的な祭りや芸能・建造物などを保存・継承するために制定されている法律は何か。", a: "文化財保護法", exp: "p.21 伝統文化の継承と新たな文化の創造" },
+      { id: 16, chapter: "第1章 現代社会と私たち", unit: "多文化共生", q: "年齢・性別・言語・障がいの有無などにかかわらず、だれもが利用しやすいように工夫されたデザインを何というか。", a: "ユニバーサルデザイン", exp: "p.23 多文化共生" },
+      { id: 17, chapter: "第1章 現代社会と私たち", unit: "多文化共生", q: "国籍や民族などの異なる人々が、互いの文化的ちがいを認め合い、対等な関係を築きながら共に生きていくことを何というか。", a: "多文化共生", exp: "p.23 多文化共生" },
+      { id: 18, chapter: "第1章 現代社会と私たち", unit: "決まりを作る目的と方法", q: "対立を合意に導くだけでなく、前もって対立を防ぐために社会集団の中で作り共有するものを何というか。", a: "決まり（ルール）", exp: "p.26 決まりを作る目的と方法" },
+      { id: 19, chapter: "第1章 現代社会と私たち", unit: "決まりを作る目的と方法", q: "物の貸し借りや商品の購入などの際に、会社や個人が互いの権利を尊重・保障するために結ぶ決まりを何というか。", a: "契約", exp: "p.26 決まりを作る目的と方法" },
+      { id: 20, chapter: "第1章 現代社会と私たち", unit: "決まりを作る目的と方法", q: "社会集団の中で全員の意見が一致しないと物事が進まない場合に利用する採決方法を何というか。", a: "全会一致", exp: "p.27 決まりを作る目的と方法" },
+      { id: 21, chapter: "第1章 現代社会と私たち", unit: "決まりを作る目的と方法", q: "多数決を採用する場合に、結論を出す前に十分に聞き、できるだけ生かすべきとされるものは何か。", a: "少数意見（少数意見の尊重）", exp: "p.27 決まりを作る目的と方法" },
+      { id: 22, chapter: "第1章 現代社会と私たち", unit: "決まりを作る目的と方法", q: "利害の対立する両者が話し合いや交渉により、互いに満足する利益を得ることを英語で何というか。", a: "Win-Win", exp: "p.27 決まりを作る目的と方法" },
+      { id: 23, chapter: "第1章 現代社会と私たち", unit: "効率と公正", q: "対立の解決策を考える際の2つの基準のうち、社会全体で「無駄を省く」ことを何というか。", a: "効率", exp: "p.28 効率と公正" },
+      { id: 24, chapter: "第1章 現代社会と私たち", unit: "効率と公正", q: "対立の解決策を考える際の2つの基準のうち、一人一人を尊重し不当に扱わないことを何というか。", a: "公正", exp: "p.29 効率と公正" },
+      { id: 25, chapter: "第1章 現代社会と私たち", unit: "効率と公正", q: "決まりを作る過程に全員が対等に参加できることを何の公正というか。", a: "手続きの公正", exp: "p.29 効率と公正" },
+      { id: 26, chapter: "第1章 現代社会と私たち", unit: "効率と公正", q: "決まりが適用された場合に不当に制限されたり不利益になったりしないよう配慮することを何の公正というか。", a: "機会や結果の公正", exp: "p.29 効率と公正" },
+      { id: 27, chapter: "第1章 現代社会と私たち", unit: "決まりの見直し", q: "決まりを見直す際の5つの観点をすべて答えよ。", a: "①目的実現 ②明確性 ③手続きの公正 ④機会や結果の公正 ⑤効率", exp: "p.30-31 決まりの見直し" },
+      { id: 28, chapter: "第1章 現代社会と私たち", unit: "決まりの見直し", q: "多様な考え方や価値観を持つ人々が互いに理解し合い、協力しながら共に生きる社会を何というか。", a: "共生社会", exp: "p.31 決まりの見直し" },
+
+      // 第2章 個人の尊重と日本国憲法（No.29〜76）
+      { id: 29, chapter: "第2章 個人の尊重と日本国憲法", unit: "憲法の制定と比較", q: "1889年に発布された、天皇が主権を持つ日本の最初の近代憲法は何か。", a: "大日本帝国憲法", exp: "p.41・43 憲法の制定と比較" },
+      { id: 30, chapter: "第2章 個人の尊重と日本国憲法", unit: "人権の歴史", q: "1919年にドイツで制定され、世界で初めて社会権を保障した憲法は何か。", a: "ワイマール憲法", exp: "p.41 人権の歴史" },
+      { id: 31, chapter: "第2章 個人の尊重と日本国憲法", unit: "人権の国際的保障", q: "1948年に国際連合総会で採択された、人権保障の世界共通の基準を示した宣言は何か。", a: "世界人権宣言", exp: "p.41・69 人権の国際的保障" },
+      { id: 32, chapter: "第2章 個人の尊重と日本国憲法", unit: "法の支配と立憲主義", q: "権力者の欲望による「人の支配」ではなく、法に基づいて政治を行う考え方を何というか。", a: "法の支配", exp: "p.41 法の支配と立憲主義" },
+      { id: 33, chapter: "第2章 個人の尊重と日本国憲法", unit: "法の支配と立憲主義", q: "法の支配に基づき、憲法によって政治権力を制限して人権を保障する考え方を何というか。", a: "立憲主義", exp: "p.41 法の支配と立憲主義" },
+      { id: 34, chapter: "第2章 個人の尊重と日本国憲法", unit: "日本国憲法の制定", q: "日本国憲法が公布された年月日と施行された年月日はいつか。", a: "公布：1946年11月3日、施行：1947年5月3日", exp: "p.43 日本国憲法の制定" },
+      { id: 35, chapter: "第2章 個人の尊重と日本国憲法", unit: "三大基本原理", q: "日本国憲法の三大基本原理を3つすべて答えよ。", a: "国民主権、基本的人権の尊重、平和主義", exp: "p.43 三大基本原理" },
+      { id: 36, chapter: "第2章 個人の尊重と日本国憲法", unit: "国民主権と私たちの責任", q: "国民が選んだ代表者が国会で政治について決定する仕組みを何というか。", a: "議会制民主主義（間接民主制）", exp: "p.44 国民主権と私たちの責任" },
+      { id: 37, chapter: "第2章 個人の尊重と日本国憲法", unit: "憲法改正の手続き", q: "憲法改正の発議には、衆議院と参議院のそれぞれでどのくらいの賛成が必要か。", a: "総議員の3分の2以上の賛成", exp: "p.45 憲法改正の手続き" },
+      { id: 38, chapter: "第2章 個人の尊重と日本国憲法", unit: "憲法改正の手続き", q: "国会が憲法改正を発議した後に行われる国民投票では、どのくらいの賛成で承認されるか。", a: "有効投票の過半数の賛成", exp: "p.45 憲法改正の手続き" },
+      { id: 39, chapter: "第2章 個人の尊重と日本国憲法", unit: "天皇の地位と国事行為", q: "日本国憲法第1条で定められている天皇の地位は何か。", a: "日本国の象徴であり日本国民統合の象徴", exp: "p.45 天皇の地位と国事行為" },
+      { id: 40, chapter: "第2章 個人の尊重と日本国憲法", unit: "天皇の地位と国事行為", q: "天皇が内閣の助言と承認によって行う、憲法に定められた形式的な行為を何というか。", a: "国事行為", exp: "p.45 天皇の地位と国事行為" },
+      { id: 41, chapter: "第2章 個人の尊重と日本国憲法", unit: "平和主義と憲法第9条", q: "戦争の放棄・戦力の不保持・交戦権の否認を定めた日本国憲法の条文は第何条か。", a: "第9条", exp: "p.46 平和主義と憲法第9条" },
+      { id: 42, chapter: "第2章 個人の尊重と日本国憲法", unit: "日米安全保障条約", q: "日本とアメリカが防衛のために結んでいる、日本が攻撃された際に共同で対応することを約束した条約は何か。", a: "日米安全保障条約（日米安保条約）", exp: "p.46 日米安全保障条約" },
+      { id: 43, chapter: "第2章 個人の尊重と日本国憲法", unit: "集団的自衛権", q: "自国が攻撃されていなくても、密接な関係にある国が攻撃を受けた際に反撃できる権利を何というか。", a: "集団的自衛権", exp: "p.46-47 集団的自衛権" },
+      { id: 44, chapter: "第2章 個人の尊重と日本国憲法", unit: "自衛隊の国際貢献", q: "国際連合の平和維持活動（PKO）に自衛隊が参加する根拠となった法律は何か。", a: "国際平和協力法（PKO協力法）", exp: "p.47 自衛隊の国際貢献" },
+      { id: 45, chapter: "第2章 個人の尊重と日本国憲法", unit: "被爆国日本の役割", q: "日本が掲げている核兵器についての原則を何というか（3つの内容も）。", a: "非核三原則（「持たず、作らず、持ちこませず」）", exp: "p.47 被爆国日本の役割" },
+      { id: 46, chapter: "第2章 個人の尊重と日本国憲法", unit: "平等権と共生社会", q: "2020年に北海道白老町に開館した、アイヌ文化の復興・創造の拠点となる施設を何というか。", a: "民族共生象徴空間（ウポポイ）", exp: "p.51 平等権と共生社会" },
+      { id: 47, chapter: "第2章 個人の尊重と日本国憲法", unit: "アイヌ民族への差別の撤廃", q: "2019年に制定され、アイヌの人々を「先住民族」と明記した法律は何か。", a: "アイヌ施策推進法", exp: "p.51 アイヌ民族への差別の撤廃" },
+      { id: 48, chapter: "第2章 個人の尊重と日本国憲法", unit: "在日韓国・朝鮮人への差別の撤廃", q: "特定の民族や国籍の人々を排除する差別的言動をなくすために2016年に制定された法律は何か。", a: "ヘイトスピーチ解消法", exp: "p.51 在日韓国・朝鮮人への差別の撤廃" },
+      { id: 49, chapter: "第2章 個人の尊重と日本国憲法", unit: "男女平等の実現", q: "1985年に制定され、雇用の面での女性への差別を禁止した法律は何か。", a: "男女雇用機会均等法", exp: "p.52 男女平等の実現" },
+      { id: 50, chapter: "第2章 個人の尊重と日本国憲法", unit: "男女平等の実現", q: "1999年に制定され、男女が対等な立場で活躍できる社会を目指す法律は何か。", a: "男女共同参画社会基本法", exp: "p.52 男女平等の実現" },
+      { id: 51, chapter: "第2章 個人の尊重と日本国憲法", unit: "男女平等の実現", q: "職場などでの性的な嫌がらせを何というか。", a: "セクシュアル・ハラスメント", exp: "p.52 男女平等の実現" },
+      { id: 52, chapter: "第2章 個人の尊重と日本国憲法", unit: "性の多様性", q: "人の好きになる相手の性別（性的指向）と自分の性別についての意識（性自認）を表す言葉をアルファベット4文字で何というか。", a: "SOGI", exp: "p.52 性の多様性" },
+      { id: 53, chapter: "第2章 個人の尊重と日本国憲法", unit: "障がいのある人への理解", q: "障がいのある人もない人も、さまざまな違いを認め合い支え合うことを何というか。", a: "インクルージョン", exp: "p.53 障がいのある人への理解" },
+      { id: 54, chapter: "第2章 個人の尊重と日本国憲法", unit: "障がいのある人への理解", q: "障がいのある人や高齢者が安全・快適に暮らせるよう、身体的・精神的・社会的障壁を取り除く考え方を何というか。", a: "バリアフリー", exp: "p.53 障がいのある人への理解" },
+      { id: 55, chapter: "第2章 個人の尊重と日本国憲法", unit: "障がいのある人への理解", q: "2013年に制定され、国や企業に障がい者への「合理的配慮」を求めた法律は何か。", a: "障害者差別解消法", exp: "p.53 障がいのある人への理解" },
+      { id: 56, chapter: "第2章 個人の尊重と日本国憲法", unit: "自由権", q: "自由権は大きく3つに分類される。すべて答えよ。", a: "精神の自由、身体の自由、経済活動の自由", exp: "p.54-55 自由権" },
+      { id: 57, chapter: "第2章 個人の尊重と日本国憲法", unit: "精神の自由", q: "精神の自由に含まれる4つの自由をすべて答えよ。", a: "思想・良心の自由（19条）、信教の自由（20条）、集会・結社・表現の自由（21条）、学問の自由（23条）", exp: "p.55 精神の自由" },
+      { id: 58, chapter: "第2章 個人の尊重と日本国憲法", unit: "精神の自由", q: "国が本や新聞などの内容を公表前に確認し、発表を禁止することを何といい、憲法第21条でどう規定されているか。", a: "検閲（検閲は禁止されている）", exp: "p.54-55 精神の自由" },
+      { id: 59, chapter: "第2章 個人の尊重と日本国憲法", unit: "身体の自由", q: "警察官などが逮捕や住居の捜索を行う際に、原則として裁判官の発する令状が必要とする原則を何というか（憲法第33・35条）。", a: "令状主義", exp: "p.55 身体の自由" },
+      { id: 60, chapter: "第2章 個人の尊重と日本国憲法", unit: "身体の自由", q: "日本国憲法の中で唯一「絶対にこれを禁ずる」と規定されている第36条の内容は何か。", a: "公務員による拷問及び残虐な刑罰の禁止", exp: "p.55 身体の自由" },
+      { id: 61, chapter: "第2章 個人の尊重と日本国憲法", unit: "経済活動の自由", q: "自由権のうち、他の2つに比べて公共の福祉による法律の制限を受けやすいものはどれか（種類も）。", a: "経済活動の自由（居住・移転・職業選択の自由22条、財産権の保障29条）", exp: "p.55 経済活動の自由" },
+      { id: 62, chapter: "第2章 個人の尊重と日本国憲法", unit: "社会権", q: "憲法第25条に規定されている「すべて国民は、健康で文化的な最低限度の生活を営む権利を有する」という権利を何というか。", a: "生存権", exp: "p.56 社会権" },
+      { id: 63, chapter: "第2章 個人の尊重と日本国憲法", unit: "生存権", q: "生存権を保障するために、生活に困窮する人に必要な費用を支給する法律は何か。", a: "生活保護法", exp: "p.56 生存権" },
+      { id: 64, chapter: "第2章 個人の尊重と日本国憲法", unit: "教育を受ける権利", q: "憲法第26条で保障される「教育を受ける権利」に基づき、教育の基本方針を定めた法律は何か。", a: "教育基本法", exp: "p.57 教育を受ける権利" },
+      { id: 65, chapter: "第2章 個人の尊重と日本国憲法", unit: "勤労の権利と労働基本権", q: "憲法第28条で保障されている労働基本権（労働三権）を3つすべて答えよ。", a: "団結権、団体交渉権、団体行動権（争議権）", exp: "p.57 勤労の権利と労働基本権" },
+      { id: 66, chapter: "第2章 個人の尊重と日本国憲法", unit: "働き方改革", q: "仕事と生活の調和を図ることを英語由来のカタカナ語で何というか。", a: "ワーク・ライフ・バランス", exp: "p.57 働き方改革" },
+      { id: 67, chapter: "第2章 個人の尊重と日本国憲法", unit: "参政権", q: "最高裁判所の裁判官がふさわしいかを国民が審査する参政権を何というか（憲法第79条）。", a: "最高裁判所裁判官の国民審査権", exp: "p.59 参政権" },
+      { id: 68, chapter: "第2章 個人の尊重と日本国憲法", unit: "参政権", q: "国や地方公共団体に対して要望や意見を述べる権利を何というか（憲法第16条）。", a: "請願権", exp: "p.59 参政権" },
+      { id: 69, chapter: "第2章 個人の尊重と日本国憲法", unit: "請求権", q: "国や地方の公務員の不法行為によって損害を受けたとき、賠償を求める権利を何というか（憲法第17条）。", a: "国家賠償請求権", exp: "p.59 請求権" },
+      { id: 70, chapter: "第2章 個人の尊重と日本国憲法", unit: "請求権", q: "刑事裁判で無罪になった人が、拘束などに対する補償を国に求める権利を何というか（憲法第40条）。", a: "刑事補償請求権", exp: "p.59 請求権" },
+      { id: 71, chapter: "第2章 個人の尊重と日本国憲法", unit: "「公共の福祉」と国民の義務", q: "人権の限界や制限の基準となる、社会全体の利益を意味する言葉を何というか（憲法第12・13条）。", a: "公共の福祉", exp: "p.62 「公共の福祉」と国民の義務" },
+      { id: 72, chapter: "第2章 個人の尊重と日本国憲法", unit: "国民の義務", q: "日本国憲法に定められた国民の三大義務を3つすべて答えよ。", a: "子どもに普通教育を受けさせる義務、勤労の義務、納税の義務", exp: "p.63 国民の義務" },
+      { id: 73, chapter: "第2章 個人の尊重と日本国憲法", unit: "自己決定権", q: "医療の現場で、医師が治療方法などを十分に説明し、患者が納得して同意することを何というか。", a: "インフォームド・コンセント", exp: "p.65 自己決定権" },
+      { id: 74, chapter: "第2章 個人の尊重と日本国憲法", unit: "知る権利", q: "行政機関が持つ情報の開示を国民が請求できる制度を何というか（根拠法も）。", a: "情報公開制度（情報公開法）", exp: "p.66 知る権利" },
+      { id: 75, chapter: "第2章 個人の尊重と日本国憲法", unit: "プライバシーの権利・肖像権", q: "私生活に関する情報をみだりに公開されない権利と、自分の顔や姿を勝手に撮影・公表されない権利をそれぞれ何というか。", a: "プライバシーの権利、肖像権", exp: "p.66-67 プライバシーの権利・肖像権" },
+      { id: 76, chapter: "第2章 個人の尊重と日本国憲法", unit: "情報化と人権", q: "著作物・商標・特許・意匠など、人間の知的創造物に関する権利の総称を何というか。", a: "知的財産権", exp: "p.67 情報化と人権" },
+
+      // 第3章 現代の民主政治と社会（No.77〜120）
+      { id: 77, chapter: "第3章 現代の民主政治と社会", unit: "政治と民主主義", q: "人々の間に生まれる対立を、みんなに関わる公共の課題として考え調整し社会を成り立たせていくことを何というか。", a: "政治", exp: "p.80 政治と民主主義" },
+      { id: 78, chapter: "第3章 現代の民主政治と社会", unit: "政治と民主主義", q: "異なる意見を持つ人々も含めて、決まったことにみんなを従わせる力を何というか。", a: "権力", exp: "p.80 政治と民主主義" },
+      { id: 79, chapter: "第3章 現代の民主政治と社会", unit: "政治と民主主義", q: "1863年に「人民の、人民による、人民のための政治」と民主主義の理念を演説したアメリカ大統領は誰か。", a: "リンカン", exp: "p.80 政治と民主主義" },
+      { id: 80, chapter: "第3章 現代の民主政治と社会", unit: "民主主義と多数決", q: "有権者が直接集まって政治の意思決定を行う仕組みを何というか（スイスの州など）。", a: "直接民主制", exp: "p.81 民主主義と多数決" },
+      { id: 81, chapter: "第3章 現代の民主政治と社会", unit: "選挙の意義と仕組み", q: "日本の選挙の基本原則を4つすべて答えよ。", a: "普通選挙、平等選挙、直接選挙、秘密選挙", exp: "p.82-83 選挙の意義と仕組み" },
+      { id: 82, chapter: "第3章 現代の民主政治と社会", unit: "選挙の基本原則", q: "日本で選挙権が満18歳以上に引き下げられたのは何年か（西暦）。", a: "2015年（2016年実施）", exp: "p.82 選挙の基本原則" },
+      { id: 83, chapter: "第3章 現代の民主政治と社会", unit: "日本の選挙制度", q: "1つの選挙区から1人の代表を選ぶ選挙制度を何というか。", a: "小選挙区制", exp: "p.83 日本の選挙制度" },
+      { id: 84, chapter: "第3章 現代の民主政治と社会", unit: "日本の選挙制度", q: "1つの選挙区から2人以上を得票の多い順に選ぶ選挙制度を何というか。", a: "大選挙区制", exp: "p.83 日本の選挙制度" },
+      { id: 85, chapter: "第3章 現代の民主政治と社会", unit: "日本の選挙制度", q: "得票数に応じてそれぞれの政党の議席数を決める選挙制度を何といい、日本の議席配分計算方法を何というか。", a: "比例代表制、ドント式", exp: "p.83 日本の選挙制度" },
+      { id: 86, chapter: "第3章 現代の民主政治と社会", unit: "衆議院の仕組み", q: "衆議院の定数・任期・選挙制度を答えよ。", a: "定数：465人（小選挙区289・比例代表176）、任期：4年（解散あり）、小選挙区比例代表並立制", exp: "p.83・93 衆議院の仕組み" },
+      { id: 87, chapter: "第3章 現代の民主政治と社会", unit: "参議院の仕組み", q: "参議院の定数・任期・選挙制度を答えよ。", a: "定数：248人（選挙区148・比例代表100）、任期：6年（3年ごとに半数改選・解散なし）", exp: "p.83・93 参議院の仕組み" },
+      { id: 88, chapter: "第3章 現代の民主政治と社会", unit: "死票の持つ意味", q: "落選した候補者や政党に投じられた、議席に結びつかなかった票を何というか。", a: "死票", exp: "p.83 死票の持つ意味" },
+      { id: 89, chapter: "第3章 現代の民主政治と社会", unit: "政党政治", q: "政治について同じ考えを持つ人々が作る団体を何というか。", a: "政党", exp: "p.82・85 政党政治" },
+      { id: 90, chapter: "第3章 現代の民主政治と社会", unit: "政党と日本の政党政治", q: "2つ以上の政党が協力して作る内閣（政権）を何というか。", a: "連立政権（連立内閣）", exp: "p.85 政党と日本の政党政治" },
+      { id: 91, chapter: "第3章 現代の民主政治と社会", unit: "政党と日本の政党政治", q: "政党が選挙で有権者に示す、具体的な数値目標や期限を盛り込んだ政権公約を何というか。", a: "マニフェスト（政権公約）", exp: "p.85 政党と日本の政党政治" },
+      { id: 92, chapter: "第3章 現代の民主政治と社会", unit: "政党と日本の政党政治", q: "支持する特定の政党を持たない人々を何というか。", a: "無党派層", exp: "p.85 政党と日本の政党政治" },
+      { id: 93, chapter: "第3章 現代の民主政治と社会", unit: "マスメディアと世論", q: "社会のさまざまな問題について、多くの人々によって共有されている意見を何というか。", a: "世論", exp: "p.86 マスメディアと世論" },
+      { id: 94, chapter: "第3章 現代の民主政治と社会", unit: "メディアリテラシー", q: "新聞・テレビ・SNSなどの情報をうのみにせず、さまざまな角度から批判的に読み取る力を何というか。", a: "メディアリテラシー", exp: "p.86-87 メディアリテラシー" },
+      { id: 95, chapter: "第3章 現代の民主政治と社会", unit: "選挙の課題", q: "選挙権を持つ有権者が投票に行かないことを何というか。", a: "棄権", exp: "p.88 選挙の課題" },
+      { id: 96, chapter: "第3章 現代の民主政治と社会", unit: "選挙の課題", q: "投票日当日に仕事や用事などで投票に行けない人が、投票日前に投票できる制度を何というか。", a: "期日前投票", exp: "p.88 選挙の課題" },
+      { id: 97, chapter: "第3章 現代の民主政治と社会", unit: "選挙の課題", q: "選挙区ごとの議員1人あたりの有権者数に差が生じ、有権者の持つ一票の価値が不平等になる問題を何というか。", a: "一票の格差", exp: "p.88 選挙の課題" },
+      { id: 98, chapter: "第3章 現代の民主政治と社会", unit: "被選挙権", q: "衆議院議員と参議院議員の被選挙権（立候補できる年齢）はそれぞれ何歳以上か。", a: "衆議院議員：満25歳以上、参議院議員：満30歳以上", exp: "p.89・93 被選挙権" },
+      { id: 99, chapter: "第3章 現代の民主政治と社会", unit: "利益団体", q: "自分たちの利益や目的を実現するために議員や政党に働きかける団体を何というか。", a: "利益団体（圧力団体）", exp: "p.89 利益団体" },
+      { id: 100, chapter: "第3章 現代の民主政治と社会", unit: "国会の地位", q: "日本国憲法第41条で定められている国会の2つの地位は何か。", a: "国権の最高機関、唯一の立法機関", exp: "p.92 国会の地位" },
+      { id: 101, chapter: "第3章 現代の民主政治と社会", unit: "国会議員の特権", q: "国会議員が国会開会中に原則として逮捕されない特権と、国会での演説や採決について院外で責任を問われない特権をそれぞれ何というか。", a: "不逮捕特権、免責特権", exp: "p.93 国会議員の特権" },
+      { id: 102, chapter: "第3章 現代の民主政治と社会", unit: "国会の種類", q: "毎年1月に召集され、会期が150日間の国会は何か。", a: "常会（通常国会）", exp: "p.93 国会の種類" },
+      { id: 103, chapter: "第3章 現代の民主政治と社会", unit: "国会の種類", q: "衆議院の解散による総選挙の後、30日以内に召集される国会は何か。", a: "特別会（特別国会）", exp: "p.93 国会の種類" },
+      { id: 104, chapter: "第3章 現代の民主政治と社会", unit: "国会の種類", q: "衆議院の解散中に緊急の必要があるとき、内閣の求めによって開かれる参議院の会議を何というか。", a: "参議院の緊急集会", exp: "p.93 国会の種類" },
+      { id: 105, chapter: "第3章 現代の民主政治と社会", unit: "国会の仕事", q: "国会が国の政治について調査し、証人喚問や記録の提出を求めることができる権利を何というか（憲法第62条）。", a: "国政調査権", exp: "p.94 国会の仕事" },
+      { id: 106, chapter: "第3章 現代の民主政治と社会", unit: "国会の仕事", q: "裁判官としてふさわしくない行為をした裁判官を辞めさせるかどうかを判断する機関を何というか（憲法第64条）。", a: "弾劾裁判所", exp: "p.94 国会の仕事" },
+      { id: 107, chapter: "第3章 現代の民主政治と社会", unit: "法律の制定と予算の議決", q: "国の予算案は内閣が作成し、必ず先にどちらの議院で審議されるか（予算の優越）。", a: "衆議院（予算の先議権）", exp: "p.94 法律の制定と予算の議決" },
+      { id: 108, chapter: "第3章 現代の民主政治と社会", unit: "行政の役割", q: "憲法第15条で定められている公務員の性格は何か。", a: "全体の奉仕者", exp: "p.100 行政の役割" },
+      { id: 109, chapter: "第3章 現代の民主政治と社会", unit: "行政権の拡大", q: "政府の役割を安全保障や治安維持などの最小限にとどめる考え方と、社会保障や教育など多くの仕事を担う考え方をそれぞれ何というか。", a: "小さな政府、大きな政府", exp: "p.100 行政権の拡大" },
+      { id: 110, chapter: "第3章 現代の民主政治と社会", unit: "行政の新しい動き", q: "2023年4月に発足した、政府の子ども政策のとりまとめ役を担う行政機関は何か。", a: "こども家庭庁", exp: "p.101 行政の新しい動き" },
+      { id: 111, chapter: "第3章 現代の民主政治と社会", unit: "行政の役割", q: "国会議員が提出して成立した法律を何というか（内閣提出の場合は何というか）。", a: "議員立法（内閣提出は政府立法）", exp: "p.101 行政の役割" },
+      { id: 112, chapter: "第3章 現代の民主政治と社会", unit: "行政改革", q: "行政機関が連携せず、それぞれの機関の利益や権限を優先する弊害を何というか。", a: "縦割り行政", exp: "p.101 行政改革" },
+      { id: 113, chapter: "第3章 現代の民主政治と社会", unit: "裁判の種類", q: "個人や企業など私人の間の争いについて解決を図る裁判と、犯罪の有罪・無罪や刑罰を決める裁判をそれぞれ何というか。", a: "民事裁判、刑事裁判", exp: "p.104-105 裁判の種類" },
+      { id: 114, chapter: "第3章 現代の民主政治と社会", unit: "裁判と人権保障", q: "どのような行為が犯罪になり、どのような刑罰が科されるかをあらかじめ法律で定めておく原則を何というか（憲法第31条）。", a: "罪刑法定主義", exp: "p.105 裁判と人権保障" },
+      { id: 115, chapter: "第3章 現代の民主政治と社会", unit: "刑事裁判の流れ", q: "刑事事件で、検察官が被疑者を被告人として裁判所に訴えることを何というか。", a: "起訴", exp: "p.105 刑事裁判の流れ" },
+      { id: 116, chapter: "第3章 現代の民主政治と社会", unit: "被疑者・被告人の権利", q: "刑事裁判で、経済的な理由などで弁護人を頼めない被告人のために国が費用を負担してつける弁護人を何というか。", a: "国選弁護人", exp: "p.105 被疑者・被告人の権利" },
+      { id: 117, chapter: "第3章 現代の民主政治と社会", unit: "私たちの司法", q: "弁護士などの専門家がいない地域でも司法サービスを受けられるように設立された機関を何というか。", a: "日本司法支援センター（法テラス）", exp: "p.59・106 私たちの司法" },
+      { id: 118, chapter: "第3章 現代の民主政治と社会", unit: "裁判員制度", q: "2009年に始まった、満18歳以上の国民がくじで選ばれて重大な刑事裁判の第一審に参加する制度を何というか。", a: "裁判員制度", exp: "p.106 裁判員制度" },
+      { id: 119, chapter: "第3章 現代の民主政治と社会", unit: "三権分立", q: "国会・内閣・裁判所が互いに抑制し合い均衡を保つ仕組みを何というか。", a: "三権の抑制と均衡（三権分立）", exp: "p.111 三権分立" },
+      { id: 120, chapter: "第3章 現代の民主政治と社会", unit: "違憲審査制", q: "法律や命令などが憲法に違反していないかを裁判所が審査する権限を何といい、最高裁判所は何と呼ばれているか（憲法第81条）。", a: "違憲審査権（違憲審査制）、「憲法の番人」", exp: "p.59・111 違憲審査制" }
+    ];
+
+    // コース（章）メタデータ定義
+    const COURSES = [
+      {
+        id: '第1章 現代社会と私たち',
+        tabId: 'chapTab-ch1',
+        badge: '第1章',
+        title: '現代社会と私たち',
+        subtitle: '持続可能性・情報化・少子高齢化・伝統文化・多文化共生・効率と公正',
+        range: 'No.1 〜 No.28',
+        colorClass: 'from-sky-500 to-blue-600',
+        badgeBg: 'bg-sky-100 text-sky-800 border-sky-200',
+        barColor: 'bg-sky-500'
+      },
+      {
+        id: '第2章 個人の尊重と日本国憲法',
+        tabId: 'chapTab-ch2',
+        badge: '第2章',
+        title: '個人の尊重と日本国憲法',
+        subtitle: '法の支配・三大基本原理・平和主義・基本的人権・公共の福祉・新しい人権',
+        range: 'No.29 〜 No.76',
+        colorClass: 'from-emerald-500 to-teal-600',
+        badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+        barColor: 'bg-emerald-500'
+      },
+      {
+        id: '第3章 現代の民主政治と社会',
+        tabId: 'chapTab-ch3',
+        badge: '第3章',
+        title: '現代の民主政治と社会',
+        subtitle: '民主主義・選挙制度・政党・国会・内閣と行政・裁判所と三権分立',
+        range: 'No.77 〜 No.120',
+        colorClass: 'from-violet-500 to-purple-600',
+        badgeBg: 'bg-violet-100 text-violet-800 border-violet-200',
+        barColor: 'bg-violet-500'
+      },
+      {
+        id: 'all',
+        tabId: 'chapTab-all',
+        badge: '総合演習',
+        title: '全章まとめ（総合テスト）',
+        subtitle: '第1章〜第3章の重要用語・仕組みをすべてまとめて総仕上げ',
+        range: 'No.1 〜 No.120',
+        colorClass: 'from-indigo-600 to-blue-700',
+        badgeBg: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        barColor: 'bg-indigo-600'
+      }
+    ];
+
+    const STORAGE_KEY_MASTERED = 'civics_grade3_mastered_ids_v1';
+    const STORAGE_KEY_REVIEW = 'civics_grade3_review_ids_v1';
+
+    // アプリケーション状態
+    let state = {
+      screen: 'home', // 'home' | 'study'
+      masteredIds: new Set(),
+      reviewIds: new Set(),
+      chapterFilter: 'all',
+      statusFilter: 'all', // 'all' | 'unmastered' | 'review' | 'mastered'
+      isShuffled: false,
+      viewMode: 'flashcard', // 'flashcard' | 'list'
+      filteredCards: [],
+      currentIndex: 0,
+      isFlipped: false,
+      maskAllAnswers: false
+    };
+
+    // 初期化処理
+    function init() {
+      loadProgress();
+      updateProgressUI();
+      renderHomeCourses();
+      setupKeyboardShortcuts();
+    }
+
+    // localStorageから進捗読み込み
+    function loadProgress() {
+      try {
+        const savedMastered = localStorage.getItem(STORAGE_KEY_MASTERED);
+        if (savedMastered) {
+          const parsed = JSON.parse(savedMastered);
+          if (Array.isArray(parsed)) state.masteredIds = new Set(parsed);
+        }
+        const savedReview = localStorage.getItem(STORAGE_KEY_REVIEW);
+        if (savedReview) {
+          const parsedRev = JSON.parse(savedReview);
+          if (Array.isArray(parsedRev)) state.reviewIds = new Set(parsedRev);
+        }
+      } catch (e) {
+        console.warn('進捗データの読み込みに失敗しました:', e);
+      }
+    }
+
+    // localStorageへ進捗保存
+    function saveProgress() {
+      try {
+        localStorage.setItem(STORAGE_KEY_MASTERED, JSON.stringify([...state.masteredIds]));
+        localStorage.setItem(STORAGE_KEY_REVIEW, JSON.stringify([...state.reviewIds]));
+      } catch (e) {
+        console.warn('進捗データの保存に失敗しました:', e);
+      }
+      updateProgressUI();
+      if (state.screen === 'home') {
+        renderHomeCourses();
+      } else {
+        updateActiveChapterHeader();
+      }
+    }
+
+    // 上部全体プログレスバー＆数値更新
+    function updateProgressUI() {
+      const total = ALL_QUESTIONS.length;
+      const count = state.masteredIds.size;
+      const percent = Math.round((count / total) * 100);
+
+      document.getElementById('masteredCount').textContent = count;
+      document.getElementById('masteredPercent').textContent = `${percent}%`;
+      document.getElementById('progressBar').style.width = `${percent}%`;
+    }
+
+    // ホーム画面（コース選択カード）描画
+    function renderHomeCourses() {
+      const grid = document.getElementById('courseGrid');
+      if (!grid) return;
+
+      grid.innerHTML = COURSES.map(course => {
+        const questions = course.id === 'all'
+          ? ALL_QUESTIONS
+          : ALL_QUESTIONS.filter(q => q.chapter === course.id);
+        const total = questions.length;
+        const mastered = questions.filter(q => state.masteredIds.has(q.id)).length;
+        const review = questions.filter(q => state.reviewIds.has(q.id)).length;
+        const percent = Math.round((mastered / total) * 100);
+
+        return `
+          <div onclick="selectChapter('${course.id}')" class="course-card cursor-pointer bg-white rounded-3xl border-2 border-slate-200/80 hover:border-indigo-400 p-5 sm:p-6 shadow-sm hover:shadow-md flex flex-col justify-between gap-4">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg border ${course.badgeBg}">
+                    ${course.badge}
+                  </span>
+                  <span class="text-xs font-semibold text-slate-400">${course.range}</span>
+                </div>
+                <span class="text-xs font-extrabold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                  全 ${total} 問
+                </span>
+              </div>
+
+              <h3 class="text-lg sm:text-xl font-black text-slate-900 mb-1.5 flex items-center justify-between">
+                <span>${course.title}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </h3>
+              <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                ${course.subtitle}
+              </p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-700">習得済み: <span class="text-emerald-600">${mastered}</span> / ${total}問</span>
+                  ${review > 0 ? `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">要復習 ${review}</span>` : ''}
+                </div>
+                <span class="font-extrabold text-indigo-600">${percent}%</span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full ${course.barColor} rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ホーム画面を表示
+    function showHomeScreen() {
+      state.screen = 'home';
+      document.getElementById('homeScreen').classList.remove('hidden');
+      document.getElementById('homeScreen').classList.add('flex');
+      document.getElementById('studyScreen').classList.add('hidden');
+      document.getElementById('studyScreen').classList.remove('flex');
+      document.getElementById('studySubHeader').classList.add('hidden');
+      document.getElementById('studySubHeader').classList.remove('flex');
+      renderHomeCourses();
+    }
+
+    // 章を選択して学習画面へ遷移
+    function selectChapter(chapterId) {
+      state.screen = 'study';
+      state.chapterFilter = chapterId;
+      state.statusFilter = 'all';
+
+      // 画面切り替え
+      document.getElementById('homeScreen').classList.add('hidden');
+      document.getElementById('homeScreen').classList.remove('flex');
+      document.getElementById('studyScreen').classList.remove('hidden');
+      document.getElementById('studyScreen').classList.add('flex');
+      document.getElementById('studySubHeader').classList.remove('hidden');
+      document.getElementById('studySubHeader').classList.add('flex');
+
+      // 上部章タブのアクティブスタイル更新
+      document.querySelectorAll('.chap-tab').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-2xs');
+        btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+      });
+      const courseObj = COURSES.find(c => c.id === chapterId);
+      if (courseObj) {
+        const activeTab = document.getElementById(courseObj.tabId);
+        if (activeTab) {
+          activeTab.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+          activeTab.classList.add('bg-indigo-600', 'text-white', 'shadow-2xs');
+        }
+      }
+
+      // 状態フィルターUIリセット＆適用
+      setStatusFilter('all');
+      updateActiveChapterHeader();
+    }
+
+    // 学習画面の選択中章バナー更新
+    function updateActiveChapterHeader() {
+      const courseObj = COURSES.find(c => c.id === state.chapterFilter) || COURSES[3];
+      const questions = state.chapterFilter === 'all'
+        ? ALL_QUESTIONS
+        : ALL_QUESTIONS.filter(q => q.chapter === state.chapterFilter);
+      const total = questions.length;
+      const mastered = questions.filter(q => state.masteredIds.has(q.id)).length;
+
+      document.getElementById('activeChapterTitle').textContent =
+        state.chapterFilter === 'all' ? '全章まとめ（総合テスト）' : state.chapterFilter;
+      document.getElementById('activeChapterProgressText').textContent = `習得 ${mastered} / ${total}問`;
+    }
+
+    // 配列シャッフル（Fisher-Yates）
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // フィルターとソート適用
+    function applyFilters(keepPosition = false) {
+      const chapterVal = state.chapterFilter;
+
+      let result = ALL_QUESTIONS.filter(item => {
+        const matchChapter = chapterVal === 'all' || item.chapter === chapterVal;
+        const isMastered = state.masteredIds.has(item.id);
+        const isReview = state.reviewIds.has(item.id);
+
+        let matchStatus = true;
+        if (state.statusFilter === 'mastered') matchStatus = isMastered;
+        if (state.statusFilter === 'unmastered') matchStatus = !isMastered;
+        if (state.statusFilter === 'review') matchStatus = isReview;
+        return matchChapter && matchStatus;
+      });
+
+      if (state.isShuffled) {
+        result = shuffleArray(result);
+      }
+
+      state.filteredCards = result;
+      if (!keepPosition) {
+        state.currentIndex = 0;
+      } else if (state.currentIndex >= result.length) {
+        state.currentIndex = Math.max(0, result.length - 1);
+      }
+
+      state.isFlipped = false;
+      renderFlashcard();
+      renderListView();
+    }
+
+    // 状態フィルター切り替え
+    function setStatusFilter(status) {
+      state.statusFilter = status;
+      document.querySelectorAll('.status-pill').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-2xs');
+        btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+      });
+      const activeBtn = document.getElementById(`status-${status}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-2xs');
+      }
+      applyFilters(false);
+    }
+
+    // シャッフル切り替え
+    function toggleShuffle() {
+      state.isShuffled = !state.isShuffled;
+      const btn = document.getElementById('btnShuffle');
+      const label = document.getElementById('shuffleLabel');
+      const badge = document.getElementById('shuffleBadge');
+
+      if (state.isShuffled) {
+        btn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+        btn.classList.add('bg-amber-50', 'text-amber-800', 'border-amber-300');
+        label.textContent = '番号順に戻す';
+        badge.classList.remove('hidden');
+        showToast('出題順をシャッフルしました');
+      } else {
+        btn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+        btn.classList.remove('bg-amber-50', 'text-amber-800', 'border-amber-300');
+        label.textContent = 'シャッフル';
+        badge.classList.add('hidden');
+        showToast('教科書番号順に戻しました');
+      }
+      applyFilters(false);
+    }
+
+    // 表示モード切り替え（カード学習 / 一覧リスト）
+    function switchViewMode(mode) {
+      state.viewMode = mode;
+      const tabFlash = document.getElementById('tabFlashcard');
+      const tabList = document.getElementById('tabList');
+      const viewFlash = document.getElementById('flashcardView');
+      const viewList = document.getElementById('listView');
+
+      if (mode === 'flashcard') {
+        tabFlash.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+        tabFlash.classList.remove('text-slate-600');
+        tabList.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+        tabList.classList.add('text-slate-600');
+
+        viewFlash.classList.remove('hidden');
+        viewFlash.classList.add('flex');
+        viewList.classList.add('hidden');
+        viewList.classList.remove('flex');
+        renderFlashcard();
+      } else {
+        tabList.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+        tabList.classList.remove('text-slate-600');
+        tabFlash.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+        tabFlash.classList.add('text-slate-600');
+
+        viewList.classList.remove('hidden');
+        viewList.classList.add('flex');
+        viewFlash.classList.add('hidden');
+        viewFlash.classList.remove('flex');
+        renderListView();
+      }
+    }
+
+    // フラッシュカード描画
+    function renderFlashcard() {
+      const total = state.filteredCards.length;
+      const cardContainer = document.getElementById('cardContainer');
+      const emptyState = document.getElementById('emptyState');
+      const actionControls = document.getElementById('actionControls');
+      const navControls = document.getElementById('navControls');
+      const posEl = document.getElementById('currentCardPosition');
+
+      if (total === 0) {
+        posEl.textContent = '0 / 0';
+        cardContainer.classList.add('hidden');
+        actionControls.classList.add('hidden');
+        navControls.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      cardContainer.classList.remove('hidden');
+      actionControls.classList.remove('hidden');
+      navControls.classList.remove('hidden');
+
+      const card = state.filteredCards[state.currentIndex];
+      const isMastered = state.masteredIds.has(card.id);
+      const isReview = state.reviewIds.has(card.id);
+
+      posEl.textContent = `${state.currentIndex + 1} / ${total}`;
+
+      // 表面データセット
+      document.getElementById('frontChapterBadge').textContent = card.chapter;
+      document.getElementById('frontUnitBadge').textContent = card.unit;
+      document.getElementById('frontNoBadge').textContent = `No.${card.id}`;
+      document.getElementById('frontQuestion').textContent = card.q;
+
+      const masteredBadge = document.getElementById('frontMasteredBadge');
+      const reviewBadge = document.getElementById('frontReviewBadge');
+      masteredBadge.classList.toggle('hidden', !isMastered);
+      reviewBadge.classList.toggle('hidden', !isReview);
+
+      // 裏面データセット
+      document.getElementById('backUnitBadge').textContent = card.unit;
+      document.getElementById('backNoBadge').textContent = `No.${card.id}`;
+      document.getElementById('backQuestionMini').textContent = card.q;
+      document.getElementById('backAnswer').textContent = card.a;
+      document.getElementById('backExplanation').textContent = card.exp;
+
+      // カード反転状態とボタン表示反映
+      const cardInner = document.getElementById('cardInner');
+      const frontRow = document.getElementById('frontActionRow');
+      const backRow = document.getElementById('backActionRow');
+
+      if (state.isFlipped) {
+        cardInner.classList.add('rotate-y-180');
+        frontRow.classList.add('hidden');
+        backRow.classList.remove('hidden');
+      } else {
+        cardInner.classList.remove('rotate-y-180');
+        frontRow.classList.remove('hidden');
+        backRow.classList.add('hidden');
+      }
+
+      // 前後ボタン活性制御
+      document.getElementById('btnPrev').disabled = state.currentIndex <= 0;
+      document.getElementById('btnNext').disabled = state.currentIndex >= total - 1;
+    }
+
+    // カードをめくる
+    function flipCard() {
+      if (state.filteredCards.length === 0) return;
+      state.isFlipped = !state.isFlipped;
+      renderFlashcard();
+    }
+
+    // 習得状態を記録して次へ進む
+    function markCard(mastered) {
+      if (state.filteredCards.length === 0) return;
+      const currentCard = state.filteredCards[state.currentIndex];
+
+      if (mastered) {
+        state.masteredIds.add(currentCard.id);
+        state.reviewIds.delete(currentCard.id);
+        showToast(`No.${currentCard.id} を「習得済み」にしました`);
+      } else {
+        state.masteredIds.delete(currentCard.id);
+        state.reviewIds.add(currentCard.id);
+        showToast(`No.${currentCard.id} を「要復習」にマークしました`);
+      }
+
+      saveProgress();
+
+      // 絞り込み条件によっては現在リストから除外されるため再描画
+      if ((state.statusFilter === 'unmastered' && mastered) ||
+          (state.statusFilter === 'mastered' && !mastered) ||
+          (state.statusFilter === 'review' && mastered)) {
+        applyFilters(true);
+        return;
+      }
+
+      // 次のカードへ自動遷移
+      if (state.currentIndex < state.filteredCards.length - 1) {
+        state.isFlipped = false;
+        state.currentIndex++;
+        renderFlashcard();
+      } else {
+        state.isFlipped = false;
+        renderFlashcard();
+        showToast('この範囲の最後の問題まで到達しました！');
+      }
+    }
+
+    // 前のカードへ
+    function prevCard() {
+      if (state.currentIndex > 0) {
+        state.isFlipped = false;
+        state.currentIndex--;
+        renderFlashcard();
+      }
+    }
+
+    // 次のカードへ
+    function nextCard() {
+      if (state.currentIndex < state.filteredCards.length - 1) {
+        state.isFlipped = false;
+        state.currentIndex++;
+        renderFlashcard();
+      }
+    }
+
+    // 一覧リストビュー描画
+    function renderListView() {
+      const container = document.getElementById('listContainer');
+      const countEl = document.getElementById('listCount');
+      countEl.textContent = state.filteredCards.length;
+
+      if (state.filteredCards.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+            条件に一致する問題がありません。
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = state.filteredCards.map(item => {
+        const isMastered = state.masteredIds.has(item.id);
+        const isReview = state.reviewIds.has(item.id);
+        const maskClass = state.maskAllAnswers ? 'answer-masked cursor-pointer' : '';
+        return `
+          <div class="bg-white rounded-2xl border ${isMastered ? 'border-emerald-200 bg-emerald-50/15' : (isReview ? 'border-amber-200 bg-amber-50/15' : 'border-slate-200')} p-4 shadow-2xs transition-all hover:border-indigo-200">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-xs font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">No.${item.id}</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700">${item.chapter}</span>
+                <span class="text-[11px] text-slate-500">${item.unit}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                ${isReview ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">要復習</span>' : ''}
+                <button onclick="toggleListMastered(${item.id})" class="px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${isMastered ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
+                  <span>${isMastered ? '✓ 習得済み' : '未習得'}</span>
+                </button>
+              </div>
+            </div>
+            <p class="text-sm sm:text-base font-bold text-slate-800 mb-2.5 leading-snug">${item.q}</p>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2.5 border-t border-slate-100">
+              <div class="flex items-start sm:items-center gap-2">
+                <span class="text-[11px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white shrink-0 mt-0.5 sm:mt-0">答</span>
+                <span onclick="this.classList.toggle('answer-masked')" class="text-sm sm:text-base font-bold text-indigo-700 px-1.5 py-0.5 ${maskClass}" title="タップで表示/非表示を切り替え">
+                  ${item.a}
+                </span>
+              </div>
+              <span class="text-xs text-slate-400 shrink-0">${item.exp}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // リスト画面での個別習得切り替え
+    function toggleListMastered(id) {
+      if (state.masteredIds.has(id)) {
+        state.masteredIds.delete(id);
+      } else {
+        state.masteredIds.add(id);
+        state.reviewIds.delete(id);
+      }
+      saveProgress();
+      if (state.statusFilter !== 'all') {
+        applyFilters(true);
+      } else {
+        renderListView();
+      }
+    }
+
+    // リスト画面の解答一括隠す／表示切り替え
+    function toggleMaskAllAnswers() {
+      state.maskAllAnswers = !state.maskAllAnswers;
+      const btn = document.getElementById('btnToggleAllAnswers');
+      const txt = document.getElementById('maskButtonText');
+
+      if (state.maskAllAnswers) {
+        btn.classList.remove('bg-rose-50', 'text-rose-700', 'border-rose-200');
+        btn.classList.add('bg-rose-600', 'text-white', 'border-rose-600');
+        txt.textContent = '解答をすべて表示する';
+      } else {
+        btn.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-200');
+        btn.classList.remove('bg-rose-600', 'text-white', 'border-rose-600');
+        txt.textContent = '解答をすべて隠す（赤シート）';
+      }
+      renderListView();
+    }
+
+    // 進捗リセットモーダル制御
+    function openResetModal() {
+      document.getElementById('resetModal').classList.remove('hidden');
+    }
+
+    function closeResetModal() {
+      document.getElementById('resetModal').classList.add('hidden');
+    }
+
+    function confirmResetProgress() {
+      state.masteredIds.clear();
+      state.reviewIds.clear();
+      saveProgress();
+      closeResetModal();
+      if (state.screen === 'study') {
+        applyFilters(false);
+      }
+      showToast('学習進捗をリセットしました');
+    }
+
+    // トースト通知表示
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.textContent = msg;
+
+      toast.classList.remove('opacity-0', 'translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-2');
+      }, 2200);
+    }
+
+    // キーボードショートカット（Spaceで反転、左右矢印で前後移動）
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if (state.screen !== 'study') return;
+        if (state.viewMode !== 'flashcard') return;
+        if (!document.getElementById('resetModal').classList.contains('hidden')) return;
+        if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          flipCard();
+        } else if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          nextCard();
+        } else if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          prevCard();
+        }
+      });
+    }
+
+    // アプリ起動
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
