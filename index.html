@@ -75,20 +75,33 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-5xl mx-auto px-4 py-3 sm:py-3.5">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-        <!-- ロゴ＆タイトル（クリックでコース選択ホームへ） -->
-        <button onclick="showHomeScreen()" class="flex items-center gap-2.5 text-left group focus:outline-none">
-          <div class="w-9 h-9 rounded-xl bg-indigo-600 group-hover:bg-indigo-700 text-white flex items-center justify-center font-bold shadow-sm shrink-0 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          </div>
-          <div>
-            <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
-              中学3年生社会（公民）一問一答
-            </h1>
-            <p class="text-xs text-slate-500">教科書準拠・テスト対策フラッシュカード（全120問）</p>
-          </div>
-        </button>
+        <!-- ロゴ＆タイトル（クリックでコース選択ホームへ）＋生徒ID・氏名バッジ -->
+        <div class="flex items-center justify-between sm:justify-start gap-2.5 flex-wrap">
+          <button onclick="showHomeScreen()" class="flex items-center gap-2.5 text-left group focus:outline-none">
+            <div class="w-9 h-9 rounded-xl bg-indigo-600 group-hover:bg-indigo-700 text-white flex items-center justify-center font-bold shadow-sm shrink-0 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                中学3年生社会（公民）一問一答
+              </h1>
+              <p class="text-xs text-slate-500">教科書準拠・テスト対策フラッシュカード（全120問）</p>
+            </div>
+          </button>
+
+          <!-- 生徒ID・氏名表示ボタン（クリックで編集可能） -->
+          <button
+            id="studentBadgeBtn"
+            onclick="openStudentModal()"
+            class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all flex items-center gap-1.5 shrink-0"
+            title="生徒ID・氏名を変更"
+          >
+            <span id="studentBadgeIcon">👤</span>
+            <span id="studentBadgeText">名前を設定</span>
+          </button>
+        </div>
 
         <!-- 全体の習得進捗サマリー＆リセット -->
         <div class="flex items-center justify-between sm:justify-end gap-3">
@@ -195,7 +208,7 @@
           <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold shrink-0">💡</span>
           <span>各コース内で<strong>「カードめくり学習」</strong>と<strong>「一覧リスト（赤シート機能）」</strong>をいつでも切り替えられます。</span>
         </div>
-        <span class="text-[11px] text-slate-400 shrink-0">進捗はブラウザに自動保存されます</span>
+        <span class="text-[11px] text-slate-400 shrink-0">進捗は生徒IDごとに自動保存されます</span>
       </div>
     </section>
 
@@ -455,9 +468,37 @@
 
   </main>
 
+  <!-- 生徒ID・氏名設定モーダル -->
+  <div id="studentModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div>
+        <h3 class="text-lg font-bold text-slate-900">👤 生徒ID・氏名の設定</h3>
+        <p class="text-xs text-slate-500 mt-1">生徒IDごとに学習進捗（習得済み・要復習）が個別に保存されます。</p>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label for="studentIdInput" class="block text-xs font-bold text-slate-600 mb-1">生徒ID</label>
+          <input type="text" id="studentIdInput" inputmode="numeric" placeholder="例：1001" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label for="studentNameInput" class="block text-xs font-bold text-slate-600 mb-1">氏名</label>
+          <input type="text" id="studentNameInput" placeholder="例：山田 太郎" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <button onclick="closeStudentModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-all">
+          キャンセル
+        </button>
+        <button onclick="saveStudentFromModal()" class="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm transition-all">
+          保存する
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 進捗リセット確認モーダル（alert/confirm不使用） -->
   <div id="resetModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 animate-fade-in">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
       <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -504,7 +545,7 @@
       { id: 11, chapter: "第1章 現代社会と私たち", unit: "私たちの生活と文化の役割", q: "2013年に「信仰の対象と芸術の源泉」としてユネスコの世界遺産に登録された日本の山は何か。", a: "富士山", exp: "p.18 私たちの生活と文化の役割" },
       { id: 12, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "歴史の中で育まれ、受け継がれてきた芸能や衣食住・年中行事・価値観などを何というか。", a: "伝統文化", exp: "p.20 伝統文化の継承と新たな文化の創造" },
       { id: 13, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "沖縄や奄美地域で琉球王国の時代から受け継がれてきた独自の文化を何というか（代表例も）。", a: "琉球文化（エイサー、紅型など）", exp: "p.21 伝統文化の継承と新たな文化の創造" },
-      { id: 14, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "北海道・樺太・千島列島周辺で先住民族が受け継継いできた文化を何というか（代表例も）。", a: "アイヌ文化（サロルンリムセ、アットゥシなど）", exp: "p.21 伝統文化の継承と新たな文化の創造" },
+      { id: 14, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "北海道・樺太・千島列島周辺で先住民族が受け継いできた文化を何というか（代表例も）。", a: "アイヌ文化（サロルンリムセ、アットゥシなど）", exp: "p.21 伝統文化の継承と新たな文化の創造" },
       { id: 15, chapter: "第1章 現代社会と私たち", unit: "伝統文化の継承と新たな文化の創造", q: "伝統的な祭りや芸能・建造物などを保存・継承するために制定されている法律は何か。", a: "文化財保護法", exp: "p.21 伝統文化の継承と新たな文化の創造" },
       { id: 16, chapter: "第1章 現代社会と私たち", unit: "多文化共生", q: "年齢・性別・言語・障がいの有無などにかかわらず、だれもが利用しやすいように工夫されたデザインを何というか。", a: "ユニバーサルデザイン", exp: "p.23 多文化共生" },
       { id: 17, chapter: "第1章 現代社会と私たち", unit: "多文化共生", q: "国籍や民族などの異なる人々が、互いの文化的ちがいを認め合い、対等な関係を築きながら共に生きていくことを何というか。", a: "多文化共生", exp: "p.23 多文化共生" },
@@ -665,11 +706,16 @@
       }
     ];
 
-    const STORAGE_KEY_MASTERED = 'civics_grade3_mastered_ids_v1';
-    const STORAGE_KEY_REVIEW = 'civics_grade3_review_ids_v1';
+    const STORAGE_KEY_STUDENT_ID = 'civics_grade3_student_id_v1';
+    const STORAGE_KEY_STUDENT_NAME = 'civics_grade3_student_name_v1';
+    const STORAGE_KEY_MASTERED_BASE = 'civics_grade3_mastered_ids_v1';
+    const STORAGE_KEY_REVIEW_BASE = 'civics_grade3_review_ids_v1';
 
     // アプリケーション状態
     let state = {
+      studentId: '',
+      studentName: '',
+      isAutoLinked: false,
       screen: 'home', // 'home' | 'study'
       masteredIds: new Set(),
       reviewIds: new Set(),
@@ -685,21 +731,124 @@
 
     // 初期化処理
     function init() {
+      loadStudentProfile();
       loadProgress();
       updateProgressUI();
       renderHomeCourses();
       setupKeyboardShortcuts();
     }
 
+    // URLパラメータ（?studentId=...&studentName=...）および localStorage から生徒情報を読み込み
+    function loadStudentProfile() {
+      let urlId = '';
+      let urlName = '';
+      try {
+        const params = new URLSearchParams(window.location.search);
+        urlId = (params.get('studentId') || '').trim();
+        urlName = (params.get('studentName') || '').trim();
+      } catch (e) {}
+
+      let savedId = '';
+      let savedName = '';
+      try {
+        savedId = (localStorage.getItem(STORAGE_KEY_STUDENT_ID) || '').trim();
+        savedName = (localStorage.getItem(STORAGE_KEY_STUDENT_NAME) || '').trim();
+      } catch (e) {}
+
+      state.studentId = urlId || savedId;
+      state.studentName = urlName || savedName;
+      state.isAutoLinked = !!(urlId || urlName);
+
+      if (urlId || urlName) {
+        try {
+          if (state.studentId) localStorage.setItem(STORAGE_KEY_STUDENT_ID, state.studentId);
+          if (state.studentName) localStorage.setItem(STORAGE_KEY_STUDENT_NAME, state.studentName);
+        } catch (e) {}
+      }
+
+      updateStudentBadgeUI();
+    }
+
+    // ヘッダーの生徒ID・氏名バッジを更新
+    function updateStudentBadgeUI() {
+      const btn = document.getElementById('studentBadgeBtn');
+      const iconEl = document.getElementById('studentBadgeIcon');
+      const textEl = document.getElementById('studentBadgeText');
+      if (!btn || !iconEl || !textEl) return;
+
+      if (state.studentId || state.studentName) {
+        const label = [state.studentId ? `ID:${state.studentId}` : '', state.studentName].filter(Boolean).join(' ');
+        textEl.textContent = label;
+        iconEl.textContent = state.isAutoLinked ? '🔗' : '👤';
+        btn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 transition-all flex items-center gap-1.5 shrink-0';
+      } else {
+        textEl.textContent = '名前を設定';
+        iconEl.textContent = '👤';
+        btn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all flex items-center gap-1.5 shrink-0';
+      }
+    }
+
+    // 生徒ID・氏名モーダル制御
+    function openStudentModal() {
+      document.getElementById('studentIdInput').value = state.studentId;
+      document.getElementById('studentNameInput').value = state.studentName;
+      document.getElementById('studentModal').classList.remove('hidden');
+    }
+
+    function closeStudentModal() {
+      document.getElementById('studentModal').classList.add('hidden');
+    }
+
+    function saveStudentFromModal() {
+      const newId = document.getElementById('studentIdInput').value.trim();
+      const newName = document.getElementById('studentNameInput').value.trim();
+
+      state.studentId = newId;
+      state.studentName = newName;
+      state.isAutoLinked = false;
+
+      try {
+        if (newId) localStorage.setItem(STORAGE_KEY_STUDENT_ID, newId);
+        else localStorage.removeItem(STORAGE_KEY_STUDENT_ID);
+
+        if (newName) localStorage.setItem(STORAGE_KEY_STUDENT_NAME, newName);
+        else localStorage.removeItem(STORAGE_KEY_STUDENT_NAME);
+      } catch (e) {}
+
+      updateStudentBadgeUI();
+      loadProgress();
+      updateProgressUI();
+      if (state.screen === 'home') {
+        renderHomeCourses();
+      } else {
+        updateActiveChapterHeader();
+        applyFilters(false);
+      }
+      closeStudentModal();
+      showToast('生徒情報を更新しました');
+    }
+
+    // 生徒IDに応じた保存キーを生成（共有端末でも生徒ごとに進捗分離）
+    function getProgressStorageKeys() {
+      const suffix = state.studentId ? `_${state.studentId}` : '';
+      return {
+        masteredKey: `${STORAGE_KEY_MASTERED_BASE}${suffix}`,
+        reviewKey: `${STORAGE_KEY_REVIEW_BASE}${suffix}`
+      };
+    }
+
     // localStorageから進捗読み込み
     function loadProgress() {
+      state.masteredIds = new Set();
+      state.reviewIds = new Set();
+      const { masteredKey, reviewKey } = getProgressStorageKeys();
       try {
-        const savedMastered = localStorage.getItem(STORAGE_KEY_MASTERED);
+        const savedMastered = localStorage.getItem(masteredKey);
         if (savedMastered) {
           const parsed = JSON.parse(savedMastered);
           if (Array.isArray(parsed)) state.masteredIds = new Set(parsed);
         }
-        const savedReview = localStorage.getItem(STORAGE_KEY_REVIEW);
+        const savedReview = localStorage.getItem(reviewKey);
         if (savedReview) {
           const parsedRev = JSON.parse(savedReview);
           if (Array.isArray(parsedRev)) state.reviewIds = new Set(parsedRev);
@@ -711,9 +860,10 @@
 
     // localStorageへ進捗保存
     function saveProgress() {
+      const { masteredKey, reviewKey } = getProgressStorageKeys();
       try {
-        localStorage.setItem(STORAGE_KEY_MASTERED, JSON.stringify([...state.masteredIds]));
-        localStorage.setItem(STORAGE_KEY_REVIEW, JSON.stringify([...state.reviewIds]));
+        localStorage.setItem(masteredKey, JSON.stringify([...state.masteredIds]));
+        localStorage.setItem(reviewKey, JSON.stringify([...state.reviewIds]));
       } catch (e) {
         console.warn('進捗データの保存に失敗しました:', e);
       }
@@ -840,7 +990,6 @@
 
     // 学習画面の選択中章バナー更新
     function updateActiveChapterHeader() {
-      const courseObj = COURSES.find(c => c.id === state.chapterFilter) || COURSES[3];
       const questions = state.chapterFilter === 'all'
         ? ALL_QUESTIONS
         : ALL_QUESTIONS.filter(q => q.chapter === state.chapterFilter);
@@ -1220,6 +1369,7 @@
         if (state.screen !== 'study') return;
         if (state.viewMode !== 'flashcard') return;
         if (!document.getElementById('resetModal').classList.contains('hidden')) return;
+        if (!document.getElementById('studentModal').classList.contains('hidden')) return;
         if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
         if (e.code === 'Space') {
